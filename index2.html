@@ -3,474 +3,532 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026 日本青森東京 8日遊 (青森風格版)</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome for Icons -->
+    <title>2026 日本青森東京 8日遊 (修正完成版)</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        // 青森主題色：深藍（睡魔/海）和蘋果紅
-                        aomori: {
-                            primary: '#1A4D7A', // Nebuta Blue
-                            apple: '#E53E3E', // Apple Red
-                            snow: '#F7F9FC', // Light snowy background
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'Helvetica Neue', 'Arial', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
     <style>
-        /* Custom scrollbar for the day nav (隱藏滾動條) */
-        .nav-scroller::-webkit-scrollbar { display: none; }
-        .nav-scroller { -ms-overflow-style: none; scrollbar-width: none; }
-        /* Timeline line color */
-        .timeline-item-line { border-left-color: #3B82F6 !important; }
-        /* Ensure the timeline dot has a higher z-index */
-        .timeline-item::before { z-index: 10; }
+        :root {
+            --primary: #2c3e50;
+            --accent: #e74c3c;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --text: #333;
+        }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding-bottom: 60px;
+        }
+        
+        /* 頂部 Header */
+        header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        header h1 { margin: 0; font-size: 1.2rem; }
+        header p { margin: 5px 0 0; font-size: 0.8rem; opacity: 0.9; }
+
+        /* 天氣與工具列 */
+        .tools-bar {
+            display: flex;
+            justify-content: space-around;
+            background: white;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .tool-btn {
+            text-decoration: none;
+            color: var(--primary);
+            font-size: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .tool-btn i { font-size: 1.2rem; margin-bottom: 4px; color: #3498db; }
+
+        /* 導覽列 (Days) */
+        .nav-scroller {
+            overflow-x: auto;
+            white-space: nowrap;
+            background: white;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            position: sticky;
+            top: 70px;
+            z-index: 999;
+            -webkit-overflow-scrolling: touch;
+        }
+        .nav-btn {
+            display: inline-block;
+            padding: 8px 15px;
+            margin-right: 8px;
+            border-radius: 20px;
+            border: 1px solid #ddd;
+            background: #f8f9fa;
+            color: #555;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .nav-btn.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        /* 內容區塊 */
+        .container {
+            padding: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* 行程卡片 */
+        .day-section { display: none; animation: fadeIn 0.3s; }
+        .day-section.active { display: block; }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 20px;
+            border-left: 2px solid #ddd;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 0;
+            width: 10px;
+            height: 10px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+        .time {
+            font-weight: bold;
+            color: var(--accent);
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .card h3 { margin: 0 0 5px; font-size: 1rem; color: var(--primary); }
+        .card p { margin: 0 0 8px; font-size: 0.9rem; color: #666; line-height: 1.4; }
+        
+        /* 連結按鈕 */
+        .action-btn {
+            display: inline-block;
+            background-color: #e8f0fe;
+            color: #1967d2;
+            padding: 6px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            margin-right: 8px; /* For multiple buttons */
+        }
+        .action-btn i { margin-right: 4px; }
+
+        /* 費用表格 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background-color: #f1f1f1; color: #333; }
+        .total-row { font-weight: bold; background-color: #fff3cd; }
+        .total-row td:nth-child(3) { color: var(--accent); } /* Highlight total number */
+
+        /* Hotel Tag */
+        .hotel-tag {
+            background: #e0f2f1;
+            color: #00695c;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-top: 5px;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="bg-aomori-snow text-gray-800 font-sans">
+<body>
 
-<!-- 頂部 Header (睡魔主題深藍) -->
-<header class="bg-aomori-primary text-white p-4 text-center sticky top-0 z-50 shadow-lg"
-        style="background-image: linear-gradient(135deg, #1A4D7A 0%, #2A6EAC 100%);">
-    <div class="flex justify-center items-center">
-        <!-- 睡魔燈籠/蘋果的視覺元素 -->
-        <span class="text-2xl mr-2">🏮</span>
-        <h1 class="text-xl font-bold tracking-wider">2026 日本青森東京之旅</h1>
-        <span class="text-2xl ml-2">🍎</span>
-    </div>
-    <p class="text-sm opacity-90 mt-1">2/12 - 2/19 (8天7夜) | 青森與東京的冬日物語</p>
+<header>
+    <h1>2026 日本青森東京之旅</h1>
+    <p>2/12 - 2/19 (8天7夜)</p>
 </header>
 
-<!-- 天氣與工具列 -->
-<div class="tools-bar flex justify-around bg-white p-3 shadow-md mb-3 sticky top-16 z-40">
-    <a href="https://tenki.jp/forecast/2/5/3130/2206/" target="_blank" class="tool-btn flex flex-col items-center text-aomori-primary text-xs font-medium hover:text-aomori-apple transition">
-        <i class="fas fa-snowflake text-lg text-blue-500 mb-1"></i> 青森天氣
+<div class="tools-bar">
+    <a href="https://tenki.jp/forecast/2/5/3130/2206/" target="_blank" class="tool-btn">
+        <i class="fas fa-snowflake"></i> 青森天氣
     </a>
-    <a href="https://tenki.jp/forecast/3/16/4410/13106/" target="_blank" class="tool-btn flex flex-col items-center text-aomori-primary text-xs font-medium hover:text-aomori-apple transition">
-        <i class="fas fa-sun text-lg text-yellow-500 mb-1"></i> 東京天氣
+    <a href="https://tenki.jp/forecast/3/16/4410/13106/" target="_blank" class="tool-btn">
+        <i class="fas fa-sun"></i> 東京天氣
     </a>
-    <a href="https://www.google.com/maps" target="_blank" class="tool-btn flex flex-col items-center text-aomori-primary text-xs font-medium hover:text-aomori-apple transition">
-        <i class="fas fa-map-marked-alt text-lg text-green-500 mb-1"></i> Google Maps
+    <a href="https://www.google.com/maps" target="_blank" class="tool-btn">
+        <i class="fas fa-map-marked-alt"></i> Google Maps
     </a>
-    <a href="#budget" onclick="showSection('budget')" class="tool-btn flex flex-col items-center text-aomori-primary text-xs font-medium hover:text-aomori-apple transition">
-        <i class="fas fa-calculator text-lg text-aomori-apple mb-1"></i> 費用表
+    <a href="#budget" onclick="showSection('budget')" class="tool-btn">
+        <i class="fas fa-calculator"></i> 費用表
     </a>
 </div>
 
-<!-- 導覽列 (Days) - 橫向滾動 -->
-<div class="nav-scroller overflow-x-auto whitespace-nowrap bg-white p-3 border-b border-gray-200 sticky top-[110px] z-30 shadow-sm">
-    <button class="nav-btn inline-block px-4 py-2 mr-2 rounded-full border border-gray-300 bg-gray-100 text-gray-600 cursor-pointer text-sm font-semibold transition hover:bg-gray-200" onclick="showDay(1)">D1 2/12(四)</button>
-    <button class="nav-btn inline-block px-4 py-2 mr-2 rounded-full border border-gray-300 bg-gray-100 text-gray-600 cursor-pointer text-sm font-semibold transition hover:bg-gray-200" onclick="showDay(2)">D2 2/13(五)</button>
-    <button class="nav-btn inline-block px-4 py-2 mr-2 rounded-full border border-gray-300 bg-gray-100 text-gray-600 cursor-pointer text-sm font-semibold transition hover:bg-gray-200" onclick="showDay(3)">D3 2/14(六)</button>
-    <button class="nav-btn inline-block px-4 py-2 mr-2 rounded-full border border-gray-300 bg-gray-100 text-gray-600 cursor-pointer text-sm font-semibold transition hover:bg-gray-200" onclick="showDay(4)">D4 2/15(日)</button>
-    <button class="nav-btn inline-block px-4 py-2 mr-2 rounded-full border border-gray-300 bg-gray-100 text-gray-600 cursor-pointer text-sm font-semibold transition hover:bg-gray-200" onclick="showDay(5)">D5 2/16(一)</button>
-    <button class="nav-btn inline-block px-4 py-2 mr-2 rounded-full border border-gray-300 bg-gray-100 text-gray-600 cursor-pointer text-sm font-semibold transition hover:bg-gray-200" onclick="showDay(6)">D6 2/17(二)</button>
-    <button class="nav-btn inline-block px-4 py-2 mr-2 rounded-full border border-gray-300 bg-gray-100 text-gray-600 cursor-pointer text-sm font-semibold transition hover:bg-gray-200" onclick="showDay(7)">D7 2/18(三)</button>
-    <button class="nav-btn inline-block px-4 py-2 mr-2 rounded-full border border-gray-300 bg-gray-100 text-gray-600 cursor-pointer text-sm font-semibold transition hover:bg-gray-200" onclick="showDay(8)">D8 2/19(四)</button>
+<div class="nav-scroller">
+    <button class="nav-btn active" onclick="showDay(1)">D1 2/12(四)</button>
+    <button class="nav-btn" onclick="showDay(2)">D2 2/13(五)</button>
+    <button class="nav-btn" onclick="showDay(3)">D3 2/14(六)</button>
+    <button class="nav-btn" onclick="showDay(4)">D4 2/15(日)</button>
+    <button class="nav-btn" onclick="showDay(5)">D5 2/16(一)</button>
+    <button class="nav-btn" onclick="showDay(6)">D6 2/17(二)</button>
+    <button class="nav-btn" onclick="showDay(7)">D7 2/18(三)</button>
+    <button class="nav-btn" onclick="showDay(8)">D8 2/19(四)</button>
 </div>
 
-<div class="container mx-auto p-4 max-w-xl">
+<div class="container">
 
-    <!-- Day 1 Content -->
-    <div id="day1" class="day-section hidden animate-fade-in space-y-6">
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">12:10 - 16:20</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">✈️ 航班：台北 - 東京成田</h3>
-                <p class="text-sm text-gray-600">獅子航空 SL 394</p>
+    <div id="day1" class="day-section active">
+        <div class="timeline-item">
+            <div class="time">12:10 - 16:20</div>
+            <div class="card">
+                <h3>✈️ 航班：台北 - 東京成田</h3>
+                <p>獅子航空 SL 394</p>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">16:20 - 18:00</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">🚄 Skyliner 前往上野</h3>
-                <p class="text-sm text-gray-600">成田機場 -> 上野車站</p>
+        <div class="timeline-item">
+            <div class="time">16:20 - 18:00</div>
+            <div class="card">
+                <h3>🚄 Skyliner 前往上野</h3>
+                <p>成田機場 -> 上野車站</p>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">18:00</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">🏨 飯店 Check-in (東京)</h3>
-                <span class="hotel-tag bg-blue-100 text-blue-700 font-medium px-3 py-1 rounded-full text-xs inline-block mt-2">東京上野喜來登福朋酒店</span>
-                <div class="mt-3 flex flex-wrap gap-2">
-                    <a href="https://www.marriott.com/en-us/hotels/tyofp-four-points-by-sheraton-tokyo-shinjuku/overview/" target="_blank" class="action-btn flex items-center bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg text-xs font-medium hover:bg-indigo-200 transition"><i class="fas fa-globe mr-1"></i> 官網</a>
-                    <a href="https://www.google.com/maps/search/%E6%9D%B1%E4%BA%AC%E4%B8%8A%E9%87%8E%E5%96%9C%E4%BE%86%E7%99%BB%E7%A6%8F%E9%BB%9E%E9%85%92%E5%BA%97" target="_blank" class="action-btn flex items-center bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg text-xs font-medium hover:bg-indigo-200 transition"><i class="fas fa-location-arrow mr-1"></i> 導航</a>
-                </div>
+        <div class="timeline-item">
+            <div class="time">18:00</div>
+            <div class="card">
+                <h3>🏨 飯店 Check-in (東京)</h3>
+                <span class="hotel-tag">東京上野喜來登福朋酒店</span>
+                <br>
+                <a href="https://www.marriott.com/en-us/hotels/tyofp-four-points-by-sheraton-tokyo-shinjuku/overview/" target="_blank" class="action-btn"><i class="fas fa-globe"></i> 官網</a>
+                <a href="https://www.google.com/maps/search/%E6%9D%B1%E4%BA%AC%E4%B8%8A%E9%87%8E%E5%96%9C%E4%BE%86%E7%99%BB%E7%A6%8F%E9%BB%9E%E9%85%92%E5%BA%97" target="_blank" class="action-btn"><i class="fas fa-location-arrow"></i> 導航</a>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
     </div>
 
-    <!-- Day 2 Content -->
-    <div id="day2" class="day-section hidden animate-fade-in space-y-6">
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">07:38 - 10:52</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">🚄 新幹線：上野 -> 新青森</h3>
-                <p class="text-sm text-gray-600">Hayabusa 3號 (JR PASS)</p>
+    <div id="day2" class="day-section">
+        <div class="timeline-item">
+            <div class="time">07:38 - 10:52</div>
+            <div class="card">
+                <h3>🚄 新幹線：上野 -> 新青森</h3>
+                <p>Hayabusa 3號 (JR PASS)</p>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">11:30 - 17:00</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">📸 弘前市區觀光</h3>
-                <p class="text-sm text-gray-600 leading-relaxed">弘前車站 (¥680) -> 1. 津輕藩睡魔村 / 2. 仲町武家宅邸 / 3. 弘前城 (雪燈籠) / 4. 大正浪漫喫茶 (下午茶)</p>
-                <div class="mt-3 flex flex-wrap gap-2">
-                    <a href="https://www.google.com/maps/search/%E5%BC%98%E5%89%8D%E5%9F%8E" target="_blank" class="action-btn flex items-center bg-green-100 text-green-700 px-3 py-1 rounded-lg text-xs font-medium hover:bg-green-200 transition"><i class="fas fa-map-pin mr-1"></i> 弘前城導航</a>
-                </div>
+        <div class="timeline-item">
+            <div class="time">11:30 - 17:00</div>
+            <div class="card">
+                <h3>📸 弘前市區觀光</h3>
+                <p>弘前車站 (¥680) -> 1. 津輕藩睡魔村 / 2. 仲町武家宅邸 / 3. 弘前城 (雪燈籠) / 4. 大正浪漫喫茶 (下午茶)</p>
+                <a href="https://www.google.com/maps/search/%E5%BC%98%E5%89%8D%E5%9F%8E" target="_blank" class="action-btn"><i class="fas fa-map-pin"></i> 弘前城導航</a>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">住宿</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">東橫INN 新青森站東口 (本日起連續入住)</h3>
-                <span class="hotel-tag bg-blue-100 text-blue-700 font-medium px-3 py-1 rounded-full text-xs inline-block mt-2">東橫INN 新青森站東口</span>
-                <div class="mt-3 flex flex-wrap gap-2">
-                    <a href="https://www.toyoko-inn.com/search/detail/00318" target="_blank" class="action-btn flex items-center bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg text-xs font-medium hover:bg-indigo-200 transition"><i class="fas fa-globe mr-1"></i> 官網</a>
-                    <a href="https://www.google.com/maps/search/%E6%9D%B1%E6%A9%ABINN%E6%96%B0%E9%9D%92%E6%A3%AE%E7%AB%99%E6%9D%B1%E5%8F%A3" target="_blank" class="action-btn flex items-center bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg text-xs font-medium hover:bg-indigo-200 transition"><i class="fas fa-location-arrow mr-1"></i> 導航</a>
-                </div>
+        <div class="timeline-item">
+            <div class="time">住宿</div>
+            <div class="card">
+                <h3>東橫INN 新青森站東口 (本日起連續入住)</h3>
+                <span class="hotel-tag">東橫INN 新青森站東口</span>
+                <br>
+                <a href="https://www.toyoko-inn.com/search/detail/00318" target="_blank" class="action-btn"><i class="fas fa-globe"></i> 官網</a>
+                <a href="https://www.google.com/maps/search/%E6%9D%B1%E6%A9%ABINN%E6%96%B0%E9%9D%92%E6%A3%AE%E7%AB%99%E6%9D%B1%E5%8F%A3" target="_blank" class="action-btn"><i class="fas fa-location-arrow"></i> 導航</a>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
     </div>
 
-    <!-- Day 3 Content -->
-    <div id="day3" class="day-section hidden animate-fade-in space-y-6">
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">09:40 - 10:45</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">🚌 JR BUS はっこうだ 4號</h3>
-                <p class="text-sm text-gray-600">新青森駅前 -> 纜車駅前 (JR PASS 免費免預約)</p>
+    <div id="day3" class="day-section">
+        <div class="timeline-item">
+            <div class="time">09:40 - 10:45</div>
+            <div class="card">
+                <h3>🚌 JR BUS はっこうだ 4號</h3>
+                <p>新青森駅前 -> 纜車駅前 (JR PASS 免費免預約)</p>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">11:00 - 13:00</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">❄️ 八甲田纜車及樹冰</h3>
-                <p class="text-sm text-gray-600">搭乘纜車欣賞樹冰奇景</p>
-                <div class="mt-3 flex flex-wrap gap-2">
-                    <a href="https://www.google.com/maps/search/%E5%85%AB%E7%94%B2%E7%94%B0%E3%83%AD%E3%83%BC%E3%83%97%E3%82%A6%E3%82%A7%E3%82%A4" target="_blank" class="action-btn flex items-center bg-blue-100 text-blue-700 px-3 py-1 rounded-lg text-xs font-medium hover:bg-blue-200 transition"><i class="fas fa-mountain mr-1"></i> 纜車站導航</a>
-                </div>
+        <div class="timeline-item">
+            <div class="time">11:00 - 13:00</div>
+            <div class="card">
+                <h3>❄️ 八甲田纜車及樹冰</h3>
+                <p>搭乘纜車欣賞樹冰奇景</p>
+                <a href="https://www.google.com/maps/search/%E5%85%AB%E7%94%B2%E7%94%B0%E3%83%AD%E3%83%BC%E3%83%97%E3%82%A6%E3%82%A7%E3%82%A4" target="_blank" class="action-btn"><i class="fas fa-mountain"></i> 纜車站導航</a>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">13:43 - 14:38</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">🚌 JR BUS：返回青森車站</h3>
-                <p class="text-sm text-gray-600">纜車駅前 -> 青森駅</p>
+        <div class="timeline-item">
+            <div class="time">13:43 - 14:38</div>
+            <div class="card">
+                <h3>🚌 JR BUS：返回青森車站</h3>
+                <p>纜車駅前 -> 青森駅</p>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">15:00 - 19:00</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">🐟 青森市區觀光與美食</h3>
-                <p class="text-sm text-gray-600 leading-relaxed">
-                    1. 古川市場 (海鮮丼) - <a href="https://www.google.com/maps/search/%E5%8F%A4%E5%B7%9D%E5%B8%82%E5%A0%B4%28%E6%B5%B7%E9%AE%AE%E4%B8%BC%29" target="_blank" class="text-blue-500 hover:text-blue-700 underline">導航</a><br>
-                    2. A-FACTORY (蘋果酒工廠) - <a href="https://www.google.com/maps/search/A-FACTORY+%E9%9D%92%E6%A3%AE" target="_blank" class="text-blue-500 hover:text-blue-700 underline">導航</a><br>
-                    3. 青森物產館 (ASPM) - <a href="https://www.google.com/maps/search/%E9%9D%92%E6%A3%AE%E7%89%A9%E7%94%A2%E9%A4%A8" target="_blank" class="text-blue-500 hover:text-blue-700 underline">導航</a><br>
-                    4. 善知鳥神社「腰腿守護御守」 - <a href="https://www.google.com/maps/search/%E5%96%84%E7%9F%A5%E9%B3%A5%E7%A5%9E%E7%A4%BE" target="_blank" class="text-blue-500 hover:text-blue-700 underline">導航</a><br>
-                    5. お食事処おさない (炸干貝料理) - <a href="https://www.google.com/maps/search/%E3%81%8A%E9%A3%9F%E4%BA%8B%E5%87%A6%E3%81%8A%E3%81%95%E3%81%AA%E3%81%84" target="_blank" class="text-blue-500 hover:text-blue-700 underline">導航</a>
+        <div class="timeline-item">
+            <div class="time">15:00 - 19:00</div>
+            <div class="card">
+                <h3>🐟 青森市區觀光與美食</h3>
+                <p>
+                    1. 古川市場 (海鮮丼) - <a href="https://www.google.com/maps/search/%E5%8F%A4%E5%B7%9D%E5%B8%82%E5%A0%B4%28%E6%B5%B7%E9%AE%AE%E4%B8%BC%29" target="_blank">導航</a><br>
+                    2. A-FACTORY (蘋果酒工廠) - <a href="https://www.google.com/maps/search/A-FACTORY+%E9%9D%92%E6%A3%AE" target="_blank">導航</a><br>
+                    3. 青森物產館 (ASPM) - <a href="https://www.google.com/maps/search/%E9%9D%92%E6%A3%AE%E7%89%A9%E7%94%A3%E9%A4%A8" target="_blank">導航</a><br>
+                    4. 善知鳥神社「腰腿守護御守」 - <a href="https://www.google.com/maps/search/%E5%96%84%E7%9F%A5%E9%B3%A5%E7%A5%9E%E7%A4%BE" target="_blank">導航</a><br>
+                    5. お食事処おさない (炸干貝料理) - <a href="https://www.google.com/maps/search/%E3%81%8A%E9%A3%9F%E4%BA%8B%E5%87%A6%E3%81%8A%E3%81%95%E3%81%AA%E3%81%84" target="_blank">導航</a>
                 </p>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">住宿</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <span class="hotel-tag bg-blue-100 text-blue-700 font-medium px-3 py-1 rounded-full text-xs inline-block">東橫INN 新青森站東口</span>
+        <div class="timeline-item">
+            <div class="time">住宿</div>
+            <div class="card">
+                <span class="hotel-tag">東橫INN 新青森站東口</span>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
     </div>
 
-    <!-- Day 4 Content -->
-    <div id="day4" class="day-section hidden animate-fade-in space-y-6">
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">09:53 - 10:16</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">🚄 新幹線：新青森 -> 八戶</h3>
+    <div id="day4" class="day-section">
+        <div class="timeline-item">
+            <div class="time">09:53 - 10:16</div>
+            <div class="card">
+                <h3>🚄 新幹線：新青森 -> 八戶</h3>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">10:20 - 13:30</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">🦀 八食中心 & 購物</h3>
-                <p class="text-sm text-gray-600">八食中心買海鮮+七厘村燒烤 (午餐)<br>八戶駅前 YOU TREE 購物</p>
-                <div class="mt-3 flex flex-wrap gap-2">
-                    <a href="https://www.google.com/maps/search/%E5%85%AB%E9%A3%9F%E3%82%BB%E3%83%B3%E3%82%BF%E3%83%BC%E4%B8%83%E5%8E%98%E6%9D%91" target="_blank" class="action-btn flex items-center bg-yellow-100 text-yellow-700 px-3 py-1 rounded-lg text-xs font-medium hover:bg-yellow-200 transition"><i class="fas fa-fire mr-1"></i> 七厘村導航</a>
-                    <a href="https://www.google.com/maps/search/%E5%85%AB%E6%88%B8%E9%A7%85+YOU+TREE" target="_blank" class="action-btn flex items-center bg-yellow-100 text-yellow-700 px-3 py-1 rounded-lg text-xs font-medium hover:bg-yellow-200 transition"><i class="fas fa-shopping-bag mr-1"></i> YOU TREE</a>
-                </div>
+        <div class="timeline-item">
+            <div class="time">10:20 - 13:30</div>
+            <div class="card">
+                <h3>🦀 八食中心 & 購物</h3>
+                <p>八食中心買海鮮+七厘村燒烤 (午餐)<br>八戶駅前 YOU TREE 購物</p>
+                <a href="https://www.google.com/maps/search/%E5%85%AB%E9%A3%9F%E3%82%BB%E3%83%B3%E3%82%BF%E3%83%BC%E4%B8%83%E5%8E%98%E6%9D%91" target="_blank" class="action-btn"><i class="fas fa-fire"></i> 七厘村導航</a>
+                <a href="https://www.google.com/maps/search/%E5%85%AB%E6%88%B6%E9%A7%85+YOU+TREE" target="_blank" class="action-btn"><i class="fas fa-shopping-bag"></i> YOU TREE</a>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">13:50 - 15:30</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">🚌 接駁車：八戶 -> 奧入瀨星野</h3>
+        <div class="timeline-item">
+            <div class="time">13:50 - 15:30</div>
+            <div class="card">
+                <h3>🚌 接駁車：八戶 -> 奧入瀨星野</h3>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">16:00</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">🏨 CHECK IN & 晚餐</h3>
-                <span class="hotel-tag bg-aomori-apple/20 text-aomori-apple font-medium px-3 py-1 rounded-full text-xs inline-block mt-2">星野奧入瀨溪流飯店</span>
-                <p class="text-sm text-gray-600 mt-1">18:20 晚餐預約完成</p>
-                <div class="mt-3 flex flex-wrap gap-2">
-                    <a href="https://hoshinoresorts.com/zh_tw/hotels/oirasekeiryu/" target="_blank" class="action-btn flex items-center bg-red-100 text-red-700 px-3 py-1 rounded-lg text-xs font-medium hover:bg-red-200 transition"><i class="fas fa-globe mr-1"></i> 官網</a>
-                    <a href="https://www.google.com/maps/search/%E6%98%9F%E9%87%8E%E9%9B%86%E5%9C%98%E5%A5%A7%E5%85%A5%E7%80%A8%E6%BA%AA%E6%B5%81%E9%A3%AF%E5%BA%97" target="_blank" class="action-btn flex items-center bg-red-100 text-red-700 px-3 py-1 rounded-lg text-xs font-medium hover:bg-red-200 transition"><i class="fas fa-bed mr-1"></i> 導航</a>
-                </div>
+        <div class="timeline-item">
+            <div class="time">16:00</div>
+            <div class="card">
+                <h3>🏨 CHECK IN & 晚餐</h3>
+                <span class="hotel-tag">星野奧入瀨溪流飯店</span>
+                <p>18:20 晚餐預約完成</p>
+                <a href="https://hoshinoresorts.com/zh_tw/hotels/oirasekeiryu/" target="_blank" class="action-btn"><i class="fas fa-globe"></i> 官網</a>
+                <a href="https://www.google.com/maps/search/%E6%98%9F%E9%87%8E%E9%9B%86%E5%9C%98%E5%A5%A7%E5%85%A5%E7%80%A8%E6%BA%AA%E6%B5%81%E9%A3%AF%E5%BA%97" target="_blank" class="action-btn"><i class="fas fa-bed"></i> 導航</a>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
     </div>
 
-    <!-- Day 5 Content -->
-    <div id="day5" class="day-section hidden animate-fade-in space-y-6">
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">08:00 - 10:00</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">🍽️ 奧入瀨早餐 (已預約)</h3>
+    <div id="day5" class="day-section">
+        <div class="timeline-item">
+            <div class="time">08:00 - 10:00</div>
+            <div class="card">
+                <h3>🍽️ 奧入瀨早餐 (已預約)</h3>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">10:00 - 11:00</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">🌲 奧入瀨設施享受/溪流散步</h3>
+        <div class="timeline-item">
+            <div class="time">10:00 - 11:00</div>
+            <div class="card">
+                <h3>🌲 奧入瀨設施享受/溪流散步</h3>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">11:10 - 12:10</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">🚌 奧入瀨溪流飯店巴士活動 (已預約)</h3>
+        <div class="timeline-item">
+            <div class="time">11:10 - 12:10</div>
+            <div class="card">
+                <h3>🚌 奧入瀨溪流飯店巴士活動 (已預約)</h3>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">12:10 - 15:00</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">🚶‍♀️ 奧入瀨溪流自由散步</h3>
-                <p class="text-sm text-gray-600">利用剩餘時間深入感受溪流美景</p>
+        <div class="timeline-item">
+            <div class="time">12:10 - 15:00</div>
+            <div class="card">
+                <h3>🚶‍♀️ 奧入瀨溪流自由散步</h3>
+                <p>利用剩餘時間深入感受溪流美景</p>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">15:30 - 16:30</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">🚌 接駁車：奧入瀨 -> 青森屋</h3>
+        <div class="timeline-item">
+            <div class="time">15:30 - 16:30</div>
+            <div class="card">
+                <h3>🚌 接駁車：奧入瀨 -> 青森屋</h3>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">18:00</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">🏨 CHECK IN & 晚餐</h3>
-                <span class="hotel-tag bg-aomori-apple/20 text-aomori-apple font-medium px-3 py-1 rounded-full text-xs inline-block mt-2">星野青森屋</span>
-                <p class="text-sm text-gray-600 mt-1">晚上：睡魔雪燈籠、浮湯溫泉</p>
-                <div class="mt-3 flex flex-wrap gap-2">
-                    <a href="https://hoshinoresorts.com/zh_tw/hotels/aomoriya/" target="_blank" class="action-btn flex items-center bg-red-100 text-red-700 px-3 py-1 rounded-lg text-xs font-medium hover:bg-red-200 transition"><i class="fas fa-globe mr-1"></i> 官網</a>
-                    <a href="https://www.google.com/maps/search/%E6%98%9F%E9%87%8E%E9%9B%86%E5%9C%98%E9%9D%92%E6%A3%AE%E5%B1%8B" target="_blank" class="action-btn flex items-center bg-red-100 text-red-700 px-3 py-1 rounded-lg text-xs font-medium hover:bg-red-200 transition"><i class="fas fa-hot-tub mr-1"></i> 導航</a>
-                </div>
+        <div class="timeline-item">
+            <div class="time">18:00</div>
+            <div class="card">
+                <h3>🏨 CHECK IN & 晚餐</h3>
+                <span class="hotel-tag">星野青森屋</span>
+                <p>晚上：睡魔雪燈籠、浮湯溫泉</p>
+                <a href="https://hoshinoresorts.com/zh_tw/hotels/aomoriya/" target="_blank" class="action-btn"><i class="fas fa-globe"></i> 官網</a>
+                <a href="https://www.google.com/maps/search/%E6%98%9F%E9%87%8E%E9%9B%86%E5%9C%98%E9%9D%92%E6%A3%AE%E5%B1%8B" target="_blank" class="action-btn"><i class="fas fa-hot-tub"></i> 導航</a>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
     </div>
 
-    <!-- Day 6 Content -->
-    <div id="day6" class="day-section hidden animate-fade-in space-y-6">
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">08:00 - 10:00</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">🍽️ 青森屋早餐 (已預約)</h3>
+    <div id="day6" class="day-section">
+        <div class="timeline-item">
+            <div class="time">08:00 - 10:00</div>
+            <div class="card">
+                <h3>🍽️ 青森屋早餐 (已預約)</h3>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">10:30 - 11:30</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">🌳 青森屋公園散步/設施享受</h3>
+        <div class="timeline-item">
+            <div class="time">10:30 - 11:30</div>
+            <div class="card">
+                <h3>🌳 青森屋公園散步/設施享受</h3>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">11:25</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">🚌 接駁車：前往三澤站</h3>
+        <div class="timeline-item">
+            <div class="time">11:25</div>
+            <div class="card">
+                <h3>🚌 接駁車：前往三澤站</h3>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">12:10 - 14:58</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">🚄 新幹線：八戶 -> 上野</h3>
-                <p class="text-sm text-gray-600">Hayabusa 18號 (午餐自理)</p>
+        <div class="timeline-item">
+            <div class="time">12:10 - 14:58</div>
+            <div class="card">
+                <h3>🚄 新幹線：八戶 -> 上野</h3>
+                <p>Hayabusa 18號 (午餐自理)</p>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">15:00 - 22:00</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">🛍️ 上野購物</h3>
-                <p class="text-sm text-gray-600">多慶屋及上野周邊購物</p>
+        <div class="timeline-item">
+            <div class="time">15:00 - 22:00</div>
+            <div class="card">
+                <h3>🛍️ 上野購物</h3>
+                <p>多慶屋及上野周邊購物</p>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">住宿</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <span class="hotel-tag bg-blue-100 text-blue-700 font-medium px-3 py-1 rounded-full text-xs inline-block mt-2">上野御徒町曼迪高級酒店 (本日起連續入住)</span>
-                <div class="mt-3 flex flex-wrap gap-2">
-                    <a href="https://hotel-monday.com/premium/ueno/" target="_blank" class="action-btn flex items-center bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg text-xs font-medium hover:bg-indigo-200 transition"><i class="fas fa-globe mr-1"></i> 官網</a>
-                    <a href="https://www.google.com/maps/search/%E4%B8%8A%E9%87%8E%E5%BE%A1%E5%BE%92%E7%94%BA%E6%9B%BC%E8%BF%AA%E9%AB%98%E7%B4%9A%E9%85%92%E5%BA%97" target="_blank" class="action-btn flex items-center bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg text-xs font-medium hover:bg-indigo-200 transition"><i class="fas fa-location-arrow mr-1"></i> 導航</a>
-                </div>
+        <div class="timeline-item">
+            <div class="time">住宿</div>
+            <div class="card">
+                <span class="hotel-tag">上野御徒町曼迪高級酒店 (本日起連續入住)</span>
+                <br>
+                <a href="https://hotel-monday.com/premium/ueno/" target="_blank" class="action-btn"><i class="fas fa-globe"></i> 官網</a>
+                <a href="https://www.google.com/maps/search/%E4%B8%8A%E9%87%8E%E5%BE%A1%E5%BE%92%E7%94%BA%E6%9B%BC%E8%BF%AA%E9%AB%98%E7%B4%9A%E9%85%92%E5%BA%97" target="_blank" class="action-btn"><i class="fas fa-location-arrow"></i> 導航</a>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
     </div>
 
-    <!-- Day 7 Content -->
-    <div id="day7" class="day-section hidden animate-fade-in space-y-6">
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">全日</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">🛒 多慶屋購物及東京市區自由行</h3>
-                <p class="text-sm text-gray-600 leading-relaxed">建議行程：<br>- 補充採購<br>- 市區逛街</p>
-                <div class="mt-3 flex flex-wrap gap-2">
-                    <a href="https://www.google.com/maps/search/%E5%A4%9A%E6%85%B6%E5%B1%8B" target="_blank" class="action-btn flex items-center bg-yellow-100 text-yellow-700 px-3 py-1 rounded-lg text-xs font-medium hover:bg-yellow-200 transition"><i class="fas fa-shopping-basket mr-1"></i> 多慶屋導航</a>
-                </div>
+    <div id="day7" class="day-section">
+        <div class="timeline-item">
+            <div class="time">全日</div>
+            <div class="card">
+                <h3>🛒 多慶屋購物及東京市區自由行</h3>
+                <p>建議行程：<br>- 補充採購<br>- 市區逛街</p>
+                <a href="https://www.google.com/maps/search/%E5%A4%9A%E6%85%B6%E5%B1%8B" target="_blank" class="action-btn"><i class="fas fa-shopping-basket"></i> 多慶屋導航</a>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">晚餐</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">🍣 東京車站壽司</h3>
-                <p class="text-sm text-gray-600">東京站排隊壽司名店</p>
+        <div class="timeline-item">
+            <div class="time">晚餐</div>
+            <div class="card">
+                <h3>🍣 東京車站壽司</h3>
+                <p>東京站排隊壽司名店</p>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">住宿</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <span class="hotel-tag bg-blue-100 text-blue-700 font-medium px-3 py-1 rounded-full text-xs inline-block">上野御徒町曼迪高級酒店</span>
+        <div class="timeline-item">
+            <div class="time">住宿</div>
+            <div class="card">
+                <span class="hotel-tag">上野御徒町曼迪高級酒店</span>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
     </div>
 
-    <!-- Day 8 Content -->
-    <div id="day8" class="day-section hidden animate-fade-in space-y-6">
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">09:00 - 11:00</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">🏮 淺草寺參拜</h3>
-                <p class="text-sm text-gray-600">最後巡禮</p>
-                <div class="mt-3 flex flex-wrap gap-2">
-                    <a href="https://www.google.com/maps/search/%E6%B7%BA%E8%8D%89%E5%AF%BA" target="_blank" class="action-btn flex items-center bg-red-100 text-red-700 px-3 py-1 rounded-lg text-xs font-medium hover:bg-red-200 transition"><i class="fas fa-place-of-worship mr-1"></i> 淺草寺</a>
-                </div>
+    <div id="day8" class="day-section">
+        <div class="timeline-item">
+            <div class="time">09:00 - 11:00</div>
+            <div class="card">
+                <h3>🏮 淺草寺參拜</h3>
+                <p>最後巡禮</p>
+                <a href="https://www.google.com/maps/search/%E6%B7%BA%E8%8D%89%E5%AF%BA" target="_blank" class="action-btn"><i class="fas fa-place-of-worship"></i> 淺草寺</a>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">14:30</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">🚄 前往成田機場</h3>
+        <div class="timeline-item">
+            <div class="time">14:30</div>
+            <div class="card">
+                <h3>🚄 前往成田機場</h3>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
-        <div class="timeline-item relative pl-6 mb-6 border-l-2 border-blue-400 timeline-item-line">
-            <div class="time font-bold text-aomori-apple text-sm mb-1">17:20 - 20:25</div>
-            <div class="card bg-white rounded-xl p-4 shadow-md">
-                <h3 class="text-lg font-semibold text-aomori-primary mb-1">✈️ 航班：東京成田 - 台北</h3>
-                <p class="text-sm text-gray-600">獅子航空 SL 395</p>
+        <div class="timeline-item">
+            <div class="time">17:20 - 20:25</div>
+            <div class="card">
+                <h3>✈️ 航班：東京成田 - 台北</h3>
+                <p>獅子航空 SL 395</p>
             </div>
-            <div class="absolute left-[-8px] top-0 w-4 h-4 bg-aomori-apple rounded-full border-2 border-white"></div>
         </div>
     </div>
 
-    <!-- Budget Section -->
-    <div id="budget" class="day-section hidden animate-fade-in">
-        <div class="card bg-white rounded-xl p-4 shadow-md">
-            <h3 class="text-xl font-bold text-aomori-primary mb-3">💰 費用預算 (每人概算)</h3>
-            <p class="text-red-600 text-xs mb-3">*費用不含日幣公費部分，日幣總額請依實際匯率換算加入台幣總計。</p>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm rounded-lg overflow-hidden">
-                    <thead class="bg-gray-100">
-                        <tr>
-                            <th class="p-3 text-left font-semibold text-aomori-primary">項目</th>
-                            <th class="p-3 text-left font-semibold text-aomori-primary">說明</th>
-                            <th class="p-3 text-right font-semibold text-aomori-primary">費用 (TWD)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="p-3 border-b border-gray-100">機票</td>
-                            <td class="p-3 border-b border-gray-100">來回機票 (獅子航空)</td>
-                            <td class="p-3 border-b border-gray-100 text-right" data-twd="12631">12,631</td>
-                        </tr>
-                        <tr>
-                            <td class="p-3 border-b border-gray-100">交通</td>
-                            <td class="p-3 border-b border-gray-100">JR PASS 5日卷</td>
-                            <td class="p-3 border-b border-gray-100 text-right" data-twd="5578">5,578</td>
-                        </tr>
-                          <tr>
-                            <td class="p-3 border-b border-gray-100">D1 住宿</td>
-                            <td class="p-3 border-b border-gray-100">福朋喜來登 (1晚)</td>
-                            <td class="p-3 border-b border-gray-100 text-right" data-twd="1444">1,444</td>
-                        </tr>
-                        <tr>
-                            <td class="p-3 border-b border-gray-100">D2/D3 住宿</td>
-                            <td class="p-3 border-b border-gray-100">東橫INN 新青森 (2晚)</td>
-                            <td class="p-3 border-b border-gray-100 text-right" data-twd="3569">3,569</td> 
-                        </tr>
-                        <tr>
-                            <td class="p-3 border-b border-gray-100">D4 住宿</td>
-                            <td class="p-3 border-b border-gray-100">星野奧入瀨 (1晚)</td>
-                            <td class="p-3 border-b border-gray-100 text-right" data-twd="5299">5,299</td>
-                        </tr>
-                        <tr>
-                            <td class="p-3 border-b border-gray-100">D5 住宿</td>
-                            <td class="p-3 border-b border-gray-100">星野青森屋 (1晚)</td>
-                            <td class="p-3 border-b border-gray-100 text-right" data-twd="3824">3,824</td>
-                        </tr>
-                        <tr>
-                            <td class="p-3 border-b border-gray-100">D6/D7 住宿</td>
-                            <td class="p-3 border-b border-gray-100">Monday Premium (2晚)</td>
-                            <td class="p-3 border-b border-gray-100 text-right" data-twd="4871">4,871</td>
-                        </tr>
-                        <tr class="font-bold bg-aomori-apple/10">
-                            <td class="p-3">台幣總計</td>
-                            <td class="p-3">(機票+交通+住宿)</td>
-                            <td class="p-3 text-right text-aomori-apple" id="twd-total"></td>
-                        </tr>
-                        <tr class="bg-gray-50">
-                            <td class="p-3">公費 (日幣)</td>
-                            <td class="p-3">餐飲/雜支等</td>
-                            <td class="p-3 text-right">¥24,000</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+    <div id="budget" class="day-section">
+        <div class="card">
+            <h3>💰 費用預算 (每人概算)</h3>
+            <p style="color:red; font-size:0.8rem;">*費用不含日幣公費部分，日幣總額請依實際匯率換算加入台幣總計。</p>
+            <table>
+                <tr>
+                    <th>項目</th>
+                    <th>說明</th>
+                    <th>費用 (TWD)</th>
+                </tr>
+                <tr>
+                    <td>機票</td>
+                    <td>來回機票 (獅子航空)</td>
+                    <td data-twd="12631">12,631</td>
+                </tr>
+                <tr>
+                    <td>交通</td>
+                    <td>JR PASS 5日卷</td>
+                    <td data-twd="5578">5,578</td>
+                </tr>
+                 <tr>
+                    <td>D1 住宿</td>
+                    <td>福朋喜來登 (1晚)</td>
+                    <td data-twd="1444">1,444</td>
+                </tr>
+                <tr>
+                    <td>D2/D3 住宿</td>
+                    <td>東橫INN 新青森 (2晚)</td>
+                    <td data-twd="3569">3,569</td> 
+                </tr>
+                <tr>
+                    <td>D4 住宿</td>
+                    <td>星野奧入瀨 (1晚)</td>
+                    <td data-twd="5299">5,299</td>
+                </tr>
+                <tr>
+                    <td>D5 住宿</td>
+                    <td>星野青森屋 (1晚)</td>
+                    <td data-twd="3824">3,824</td>
+                </tr>
+                <tr>
+                    <td>D6/D7 住宿</td>
+                    <td>Monday Premium (2晚)</td>
+                    <td data-twd="4871">4,871</td>
+                </tr>
+                <tr class="total-row">
+                    <td>台幣總計</td>
+                    <td>(機票+交通+住宿)</td>
+                    <td id="twd-total"></td>
+                </tr>
+                <tr style="background:#f9f9f9;">
+                    <td>公費 (日幣)</td>
+                    <td>餐飲/雜支等</td>
+                    <td>¥24,000</td>
+                </tr>
+            </table>
         </div>
     </div>
 
@@ -491,26 +549,18 @@
     function showDay(dayIndex) {
         // Hide all sections
         const sections = document.querySelectorAll('.day-section');
-        sections.forEach(sec => sec.classList.add('hidden'));
+        sections.forEach(sec => sec.classList.remove('active'));
         
-        // Show selected section
+        // Show selected
         const selected = document.getElementById('day' + dayIndex);
-        if(selected) selected.classList.remove('hidden');
+        if(selected) selected.classList.add('active');
 
         // Update nav buttons
-        const btns = document.querySelectorAll('.nav-scroller .nav-btn');
-        btns.forEach(btn => {
-            btn.classList.remove('active', 'bg-aomori-apple', 'text-white', 'border-aomori-apple');
-            btn.classList.add('bg-gray-100', 'text-gray-600', 'border-gray-300');
-        });
+        const btns = document.querySelectorAll('.nav-btn');
+        btns.forEach(btn => btn.classList.remove('active'));
         // The day index is 1-based, array is 0-based
         if (dayIndex > 0 && dayIndex <= btns.length) {
-            const activeBtn = btns[dayIndex-1];
-            activeBtn.classList.add('active', 'bg-aomori-apple', 'text-white', 'border-aomori-apple');
-            activeBtn.classList.remove('bg-gray-100', 'text-gray-600', 'border-gray-300');
-            
-            // Scroll selected button into view if necessary
-            activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+            btns[dayIndex-1].classList.add('active');
         }
         
         // Scroll to top
@@ -521,17 +571,14 @@
     function showSection(id) {
         // Hide all sections
         const sections = document.querySelectorAll('.day-section');
-        sections.forEach(sec => sec.classList.add('hidden'));
+        sections.forEach(sec => sec.classList.remove('active'));
         
         // Show selected section
-        document.getElementById(id).classList.remove('hidden');
+        document.getElementById(id).classList.add('active');
         
         // Remove active state from day buttons
-        const btns = document.querySelectorAll('.nav-scroller .nav-btn');
-        btns.forEach(btn => {
-            btn.classList.remove('active', 'bg-aomori-apple', 'text-white', 'border-aomori-apple');
-            btn.classList.add('bg-gray-100', 'text-gray-600', 'border-gray-300');
-        });
+        const btns = document.querySelectorAll('.nav-btn');
+        btns.forEach(btn => btn.classList.remove('active'));
 
         // Scroll to top
         window.scrollTo(0, 0);
@@ -540,8 +587,7 @@
     // 初始載入時執行
     document.addEventListener('DOMContentLoaded', () => {
         calculateTotal(); // 計算總額
-        // Trigger showDay(1) to set initial state and active button class
-        showDay(1); 
+        showDay(1); // 預設顯示 Day 1
     });
 
 </script>
